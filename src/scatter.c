@@ -10,7 +10,7 @@
 #define MAX_PROCESSES 10
 #define MAX_SIZE 8388608;
 #define SEGSIZE 8192 // 8kB
-#define STRIDE 32768 // 32 kB
+#define STRIDE 8192// 32 kB
 
 typedef enum scatter_algorithms {
     BASIC_LINEAR,
@@ -134,7 +134,7 @@ int scatter(int msg_min, int msg_max, int stride){
 
 int main( int argc, char **argv ){
     int provided, err, msg_max, msg_min, stride;
-    msg_min = SEGSIZE;
+    msg_min = 8192;
     msg_max = 1048576;
     MPI_Init( &argc, &argv );
     err = MPI_T_init_thread(MPI_THREAD_SINGLE, &provided);
