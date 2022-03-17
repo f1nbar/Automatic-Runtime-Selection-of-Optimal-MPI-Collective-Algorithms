@@ -13,7 +13,6 @@ def print_data_row(row, coll):
     #    s += exp.scatter_algorithms[int(row[2]) - 1][1]
     return s.strip()
 
-
 def selection_experiments(args):
 
     print(args)
@@ -23,7 +22,7 @@ def selection_experiments(args):
     Y = []
 
     ised_data = exp.exp_data_list(
-        'local.txt', coll_type)
+        'isend_data.txt', coll_type)
 
     if not ised_data:
         print('Given file is not found!')
@@ -38,7 +37,7 @@ def selection_experiments(args):
     el = ", ".join(vformat)
     print("lb_isend: ");
     print(lb_isend)
-    train_data_path = 'local'# + str(args.nump)
+    train_data_path = 'data/long'# + str(args.nump)
     coll_type = int(args.coll)
     #converts data to list
     train_data_set = exp.exp_data_list(train_data_path, coll_type)
@@ -74,12 +73,9 @@ def selection_experiments(args):
         el = ", ".join(vformat)
 
     if coll_type:
-        unseen_data_path = 'data/local.txt'
+        unseen_data_path = 'data/short.txt'
     else:
-        # 'data/bcast/unseen/grisou_' + str(args.nump)
-        #unseen_data_path = 'data/bcast/unseen/gros_' + str(args.nump)
-        unseen_data_path = 'data/local.txt'
-        #unseen_data_path = 'data/bcast/shaheen/bcast.OUT'
+        unseen_data_path = 'data/short.txt'
     unseen_data_set = exp.exp_data_list(unseen_data_path, coll_type)
 
 
@@ -123,24 +119,6 @@ def selection_experiments(args):
     Y_exp = []
     Y_model = []
     Y_ompi = []
-    
-    for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
-        _best = '$' + exp.scatter_algorithms[int(alg1[2]) - 2][1] + '$'
-        _model = '$' + exp.scatter_algorithms[int(alg2[2]) - 2][1]+ '$'
-        _openmpi = '$' + exp.scatter_algorithms[int(alg3[2]) - 2][1]+ '$'
-        model_per = '(' + '{:.0f}'.format(alg2[3]/alg1[3] * 100 - 100) + ')'
-        ompi_perc = '(' + '{:.0f}'.format(alg3[3]/alg1[3] * 100 - 100) + ') \\\\ hline'
-        #print(int(alg2[3]/alg1[3]) * 100 - 100)
-        #print(int(alg3[3]/alg1[3]) * 100 - 100)
-        print(f"{int(alg1[1]/1024)} & {_best} & {_model} {model_per} & {_openmpi} {ompi_perc}")
-
-
-    for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
-        print(f"({int(alg1[1]/1024)}, {alg1[3]})") # , {alg2[3]}, {alg3[3]}
-    for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
-        print(f"({int(alg1[1]/1024)}, {alg2[3]})") # , {alg2[3]}, {alg3[3]}
-    for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
-        print(f"({int(alg1[1]/1024)}, {alg3[3]})") # , {alg2[3]}, {alg3[3]}
 
     for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
         Y_exp.append(alg1[3])
@@ -163,8 +141,6 @@ def selection_experiments(args):
 
     lw = 4
     X = np.array(exp.experimental_messages(unseen_data_set))
-    X = X[:-31]
-    #tempfix
     Y_exp = np.array(Y_exp)
     Y_model = np.array(Y_model)
     Y_ompi = np.array(Y_ompi)
@@ -213,7 +189,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.path = os.getcwd()
     selection_experiments(args)
-
-
 
 

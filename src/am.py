@@ -6,10 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import HuberRegressor
 """Broadcast algorithms structure in Open MPI gives us algorithms ID. We can set algorithms for given communicator
-using those IDs.
 """
 
-gamma_file = open('local.txt')
+gamma_file = open('isend_data.txt')
 gamma_list = gamma_file.readlines()
 gamma_list = [str(el).strip() for el in gamma_list]
 gamma_dic = {}
@@ -28,8 +27,6 @@ scatter_algorithms = [
      "(math.floor(math.log({3}, 2)) * {0} + {1}*{2}) + math.log({3}, 2)*{0}")
 ]
 
-
-
 def linear(p, a, b, m):
     coff = (p - 1)
     return (coff * (a + m * b), coff)
@@ -37,7 +34,6 @@ def linear(p, a, b, m):
 
 def binomial(p, a, b, m):
     coff = math.floor(math.log(p, 2))
-    #return (coff * (2*a + m * b), coff)
     return (coff * a + (p - 1) * m * b, coff)
 
 
@@ -46,7 +42,6 @@ def root_overhead(p, a, b):
     In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all
     procedure.
     """
-    #return gamma_dic[p]
     return a + p * b
 
 def lin_reg(X, Y):
@@ -89,7 +84,8 @@ def best_performance(data_list, coll_type):
    #The function returns list of best performance algorithms for  message size
     beg = 0
     # Number of collective algorithms for MPI_Bcast and MPI_Gather 
-    alg_count = 3 if coll_type else 6
+    #Scatter
+    alg_count = 2 if coll_type else 6
     best_perf_alg = []
     while beg < len(data_list):
         best_alg = min(data_list[beg:beg + alg_count], key=lambda x: x[3])
@@ -123,7 +119,7 @@ def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0, coll_typ
                 else:
                     message_sizes.append(ms)
                     times.append(row[3] / coff)
-            else:  # gather
+            else:  # scatter 
                 if row[2] == 1: # or row[2] == 2:
                     message_sizes.append(row[1])
                     times.append(row[3] / coff)
@@ -184,19 +180,19 @@ def ompi_optimal_scatter_alg(data_list):
     large_communicator_size = 60
     small_communicator_size = 10
 
-    opt_gahter_algorithm = 1  # default value
+    opt_scatter_algorithm = 1  # default value
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
     for message_size in messages:
         if message_size > large_block_size:
-            opt_gahter_algorithm = 3
+            opt_scatter_algorithm = 1
         elif message_size > intermediate_block_size:
-            opt_gahter_algorithm = 3
+            opt_scatter_algorithm = 1
         elif (communicator_size > large_communicator_size) or ((communicator_size > small_communicator_size) and (message_size < small_block_size)):
-            opt_gahter_algorithm = 2
+            opt_scatter_algorithm = 2
 
-        analy_estimation.append((message_size, opt_gahter_algorithm))
+        analy_estimation.append((message_size, opt_scatter_algorithm))
 
     get_alg_exp = []
     for opalg in analy_estimation:
@@ -216,9 +212,10 @@ def optimal_scatter_algorithm_by_model(hm_params, data_list):
     analy_estimation = []
     for m in messages:
         analytical_estimation = []
-        for algorithmid in range(1, 3):
+        for algorithmid in range(1, 2):
             value_of_combination = scatter_alg_cost(
                 p, hm_params[algorithmid-1][0], hm_params[algorithmid-1][1], m, algorithmid)
+
             analytical_estimation.append(
                 (algorithmid, value_of_combination, m))
 
@@ -232,4 +229,3 @@ def optimal_scatter_algorithm_by_model(hm_params, data_list):
                 get_alg_exp.append(expdata)
                 break
     return get_alg_exp
-
