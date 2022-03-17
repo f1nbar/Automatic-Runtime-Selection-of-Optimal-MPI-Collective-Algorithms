@@ -5,8 +5,6 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import HuberRegressor
-"""Broadcast algorithms structure in Open MPI gives us algorithms ID. We can set algorithms for given communicator
-"""
 
 gamma_file = open('isend_data.txt')
 gamma_list = gamma_file.readlines()
@@ -148,28 +146,20 @@ def experimental_messages(data_list):
 def scatter_alg_cost(p, a, b, m, alg_id):
     res = (0, 0)
     if alg_id == 1:
-        res = garther_linear(p, a, b, m)
+        res = scatter_linear(p, a, b, m)
     elif alg_id == 2:
-        res = gather_binomial(p, a, b, m)
+        res = scatter_binomial(p, a, b, m)
 
     return res
 
 
-#### Gather  algorithms ####
-def garther_linear(p, a, b, m):
+def scatter_linear(p, a, b, m):
     coff = (p - 1)
     return (coff * (a + m * b), coff)
 
-
-def gather_binomial(p, a, b, m):
+def scatter_binomial(p, a, b, m):
     coff = math.floor(math.log(p, 2))
-    #return (coff * (2*a + m * b), coff)
     return (coff * a + (p - 1) * m * b, coff)
-
-
-def gather_linear_sync(p, a, b, m):
-    coff = (p - 1)
-    return (coff * (2 * a + m * b), coff)
 
 
 def ompi_optimal_scatter_alg(data_list):
@@ -186,9 +176,9 @@ def ompi_optimal_scatter_alg(data_list):
     analy_estimation = []
     for message_size in messages:
         if message_size > large_block_size:
-            opt_scatter_algorithm = 1
+            opt_scatter_algorithm = 2
         elif message_size > intermediate_block_size:
-            opt_scatter_algorithm = 1
+            opt_scatter_algorithm = 2
         elif (communicator_size > large_communicator_size) or ((communicator_size > small_communicator_size) and (message_size < small_block_size)):
             opt_scatter_algorithm = 2
 
