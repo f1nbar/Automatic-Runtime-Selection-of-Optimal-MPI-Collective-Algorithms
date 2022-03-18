@@ -37,7 +37,7 @@ def selection_experiments(args):
     el = ", ".join(vformat)
     print("lb_isend: ");
     print(lb_isend)
-    train_data_path = 'data/long'# + str(args.nump)
+    train_data_path = 'data/6_local_long.txt'# + str(args.nump)
     coll_type = int(args.coll)
     #converts data to list
     train_data_set = exp.exp_data_list(train_data_path, coll_type)
@@ -73,7 +73,7 @@ def selection_experiments(args):
         el = ", ".join(vformat)
 
     if coll_type:
-        unseen_data_path = 'data/short.txt'
+        unseen_data_path = 'data/6_local_short.txt'
     else:
         unseen_data_path = 'data/short.txt'
     unseen_data_set = exp.exp_data_list(unseen_data_path, coll_type)

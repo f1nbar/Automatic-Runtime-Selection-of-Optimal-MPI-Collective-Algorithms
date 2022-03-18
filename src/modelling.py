@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import HuberRegressor
 
-gamma_file = open('isend_data.txt')
+gamma_file = open('data/isend_data.txt')
 gamma_list = gamma_file.readlines()
 gamma_list = [str(el).strip() for el in gamma_list]
 gamma_dic = {}
