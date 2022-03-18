@@ -14,7 +14,8 @@
 
 typedef enum scatter_algorithms {
     BASIC_LINEAR,
-    BINOMIAL
+    BINOMIAL,
+    LINEAR_SYNC
 } scatter_algorithms;
 
 typedef struct time_precision {
@@ -33,7 +34,6 @@ const char *tuned_scatter_algorithm= "coll_tuned_scatter_algorithm";
 
 int set_mca_variable(const char *variable_name, int value) {
     int cidx, nvals, err;
-    int val;
     MPI_T_cvar_handle chandle;
     err = MPI_T_cvar_get_index(variable_name, &cidx);
     if (err != MPI_SUCCESS)
@@ -47,13 +47,11 @@ int set_mca_variable(const char *variable_name, int value) {
 }
 
 void initialize_char_array(int length, char *s) {
-	char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
-	if (length)
-	{
-		for (int n = 0; n < length; n++)
-		{
+	char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!@@@";
+	if (length) {
+		for (int i = 0; i < length; i++) {
 			int key = rand() % (int)(sizeof(charset) - 1);
-			s[n] = charset[key];
+			s[i] = charset[key];
 		}
 	}
 }
@@ -85,7 +83,7 @@ int scatter(int msg_min, int msg_max, int stride){
 
     while (msg_size <= msg_max){
 
-        for (alg = 1; alg <= 2; alg++ ){
+        for (alg = 1; alg <= 3; alg++ ){
             recvbuf = (char *)malloc(msg_size);
             sendbuf = (char *)malloc(msg_size * size);
             initialize_char_array(msg_size, sendbuf);
