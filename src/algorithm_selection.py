@@ -1,6 +1,6 @@
 import os
 import argparse
-import am as exp
+import modelling as exp
 import numpy as np
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 23})
@@ -22,7 +22,7 @@ def selection_experiments(args):
     Y = []
 
     ised_data = exp.exp_data_list(
-        'isend_data.txt', coll_type)
+        'data/isend_data.txt', coll_type)
 
     if not ised_data:
         print('Given file is not found!')
