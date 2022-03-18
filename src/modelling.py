@@ -19,10 +19,11 @@ SEGSIZE = 8192
 scatter_algorithms = [
     # T = (P - 1) * (a + b*m)
     (1, "BASIC_LINEAR", "({3} - 1)*({0} + {1}*{2})"),
-
     # T = ceil(log2(P))*(ceil(log2(P) + 1))/2 *(a + mb) + log2(p)*a
     (2, "BINOMIAL",
-     "(math.floor(math.log({3}, 2)) * {0} + {1}*{2}) + math.log({3}, 2)*{0}")
+     "(math.floor(math.log({3}, 2)) * {0} + {1}*{2}) + math.log({3}, 2)*{0}"),
+    # T = a + (P - 1) * (2*a + b*m)
+    (3, "LINEAR_SYNC", "{0} + ({3} - 1)*(2*{0} + {1}*{2})")
 ]
 
 def linear(p, a, b, m):
@@ -83,7 +84,7 @@ def best_performance(data_list, coll_type):
     beg = 0
     # Number of collective algorithms for MPI_Bcast and MPI_Gather 
     #Scatter
-    alg_count = 2 if coll_type else 6
+    alg_count = 3 #if coll_type else 6
     best_perf_alg = []
     while beg < len(data_list):
         best_alg = min(data_list[beg:beg + alg_count], key=lambda x: x[3])
@@ -149,6 +150,8 @@ def scatter_alg_cost(p, a, b, m, alg_id):
         res = scatter_linear(p, a, b, m)
     elif alg_id == 2:
         res = scatter_binomial(p, a, b, m)
+    elif alg_id == 3:
+        res = scatter_linear_sync(p, a, b, m)
 
     return res
 
@@ -160,6 +163,10 @@ def scatter_linear(p, a, b, m):
 def scatter_binomial(p, a, b, m):
     coff = math.floor(math.log(p, 2))
     return (coff * a + (p - 1) * m * b, coff)
+
+def scatter_linear_sync(p, a, b, m):
+    coff = (p - 1)
+    return (coff * (2 * a + m * b), coff)
 
 
 def ompi_optimal_scatter_alg(data_list):
@@ -176,9 +183,9 @@ def ompi_optimal_scatter_alg(data_list):
     analy_estimation = []
     for message_size in messages:
         if message_size > large_block_size:
-            opt_scatter_algorithm = 2
+            opt_scatter_algorithm = 3
         elif message_size > intermediate_block_size:
-            opt_scatter_algorithm = 2
+            opt_scatter_algorithm = 3
         elif (communicator_size > large_communicator_size) or ((communicator_size > small_communicator_size) and (message_size < small_block_size)):
             opt_scatter_algorithm = 2
 
