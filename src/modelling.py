@@ -170,24 +170,63 @@ def scatter_linear_sync(p, a, b, m):
 
 
 def ompi_optimal_scatter_alg(data_list):
-    large_block_size = 92160
-    intermediate_block_size = 6000
-    small_block_size = 1024
-
-    large_communicator_size = 60
-    small_communicator_size = 10
-
+    ## Reimplementation of the Open MPI fixed decision algorithm
     opt_scatter_algorithm = 1  # default value
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
+
     for message_size in messages:
-        if message_size > large_block_size:
-            opt_scatter_algorithm = 3
-        elif message_size > intermediate_block_size:
-            opt_scatter_algorithm = 3
-        elif (communicator_size > large_communicator_size) or ((communicator_size > small_communicator_size) and (message_size < small_block_size)):
-            opt_scatter_algorithm = 2
+        if (communicator_size < 4):
+            if (message_size < 2):
+                opt_scatter_algorithm = 3
+            elif (message_size < 131072):
+                opt_scatter_algorithm = 1
+            elif (message_size < 262144):
+                opt_scatter_algorithm = 3
+            else:
+                opt_scatter_algorithm = 1
+        elif (communicator_size < 8):
+            if (message_size < 2048):
+                opt_scatter_algorithm = 2
+            elif (message_size < 4096):
+                opt_scatter_algorithm = 1
+            elif (message_size < 8192):
+                opt_scatter_algorithm = 2
+            elif (message_size < 32768):
+                opt_scatter_algorithm = 1
+            elif (message_size < 1048576):
+                opt_scatter_algorithm = 3
+            else:
+                opt_scatter_algorithm = 1
+        elif (communicator_size < 16):
+            if (message_size < 16384):
+                opt_scatter_algorithm = 2
+            elif (message_size < 1048576):
+                opt_scatter_algorithm = 3
+            else:
+                opt_scatter_algorithm = 1
+        elif (communicator_size < 32):
+            if (message_size < 16384):
+                opt_scatter_algorithm = 2
+            elif (message_size < 32768):
+                opt_scatter_algorithm = 1
+            else:
+                opt_scatter_algorithm = 3
+        elif (communicator_size < 64):
+            if (message_size < 512):
+                opt_scatter_algorithm = 2
+            elif (message_size < 8192):
+                opt_scatter_algorithm = 3
+            elif (message_size < 16384):
+                opt_scatter_algorithm = 2
+            else:
+                opt_scatter_algorithm = 3
+        else:
+            if (message_size < 512):
+                opt_scatter_algorithm = 2
+            else:
+                opt_scatter_algorithm = 3
 
         analy_estimation.append((message_size, opt_scatter_algorithm))
 
