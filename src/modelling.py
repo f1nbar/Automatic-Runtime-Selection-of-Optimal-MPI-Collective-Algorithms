@@ -1,9 +1,5 @@
-import sys
-import os
-import time
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.linear_model import HuberRegressor
 
 gamma_file = open('data/isend_data.txt')
@@ -22,18 +18,9 @@ scatter_algorithms = [
     # T = ceil(log2(P))*(ceil(log2(P) + 1))/2 *(a + mb) + log2(p)*a
     (2, "BINOMIAL",
      "(math.floor(math.log({3}, 2)) * {0} + {1}*{2}) + math.log({3}, 2)*{0}"),
-    # T = a + (P - 1) * (2*a + b*m)
-    (3, "LINEAR_SYNC", "{0} + ({3} - 1)*(2*{0} + {1}*{2})")
+    # T = (P - 1) * (a + b*m)
+    (3, "LINEAR_NB", "({3} - 1)*({0} + {1}*{2})"),
 ]
-
-def linear(p, a, b, m):
-    coff = (p - 1)
-    return (coff * (a + m * b), coff)
-
-
-def binomial(p, a, b, m):
-    coff = math.floor(math.log(p, 2))
-    return (coff * a + (p - 1) * m * b, coff)
 
 
 def root_overhead(p, a, b):
@@ -151,7 +138,7 @@ def scatter_alg_cost(p, a, b, m, alg_id):
     elif alg_id == 2:
         res = scatter_binomial(p, a, b, m)
     elif alg_id == 3:
-        res = scatter_linear_sync(p, a, b, m)
+        res = scatter_linear_nb(p, a, b, m)
 
     return res
 
@@ -164,14 +151,13 @@ def scatter_binomial(p, a, b, m):
     coff = math.floor(math.log(p, 2))
     return (coff * a + (p - 1) * m * b, coff)
 
-def scatter_linear_sync(p, a, b, m):
+def scatter_linear_nb(p, a, b, m):
     coff = (p - 1)
-    return (coff * (2 * a + m * b), coff)
-
+    return (coff * (a + m * b), coff)
 
 def ompi_optimal_scatter_alg(data_list):
     ## Reimplementation of the Open MPI fixed decision algorithm
-    opt_scatter_algorithm = 1  # default value
+    opt_scatter_algorithm = 1  # default value for scatter
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
@@ -229,7 +215,6 @@ def ompi_optimal_scatter_alg(data_list):
                 opt_scatter_algorithm = 3
 
         analy_estimation.append((message_size, opt_scatter_algorithm))
-
     get_alg_exp = []
     for opalg in analy_estimation:
         for expdata in data_list:
