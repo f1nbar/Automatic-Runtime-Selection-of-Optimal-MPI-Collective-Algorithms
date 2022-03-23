@@ -7,22 +7,18 @@ plt.rcParams.update({'font.size': 23})
 
 def print_data_row(row, coll):
     s = str(row[0]) + ' ' + str(row[1]) + " " + str(row[3]) + " "
-    #if coll:
     s += exp.scatter_algorithms[int(row[2] - 2)][1]
-    #else:
-    #    s += exp.scatter_algorithms[int(row[2]) - 1][1]
     return s.strip()
 
 def selection_experiments(args):
 
     print(args)
-    coll_type = int(args.coll)
 
     X = []
     Y = []
 
     ised_data = exp.exp_data_list(
-        'data/isend_data.txt', coll_type)
+        'data/isend_data.txt', 1)
 
     if not ised_data:
         print('Given file is not found!')
@@ -38,17 +34,9 @@ def selection_experiments(args):
     print("lb_isend: ");
     print(lb_isend)
     train_data_path = 'data/6_local_long.txt'# + str(args.nump)
-    coll_type = int(args.coll)
+    coll_type = 1
     #converts data to list
     train_data_set = exp.exp_data_list(train_data_path, coll_type)
-
-    #return
-
-   #  train_data_path = 'data/bcast/unseen/gros_50'# + str(args.nump)
-   # if coll_type:
-   # if not train_data_set:
-   #     print('Given file is not found!')
-   #     return  
 
     # Hockney model parameters are measured using collective algorithms
     hockney_model_parameters = []
@@ -76,22 +64,20 @@ def selection_experiments(args):
         unseen_data_path = 'data/6_local_short.txt'
     else:
         unseen_data_path = 'data/short.txt'
+
     unseen_data_set = exp.exp_data_list(unseen_data_path, coll_type)
 
 
-    if coll_type:
-        unseen_data_set = [
-            td for td in unseen_data_set if td[1] in range(65536, 827382)]
-    #else:
-    #    unseen_data_set = [
-   #         td for td in unseen_data_set if td[1] in range(8192, 4194310)]
+    unseen_data_set = [
+        td for td in unseen_data_set if td[1] in range(65536, 827382)]
+
     if not unseen_data_set:
         print('Unseen performance data does not exist!')
         return
 
     best_perf_alg = exp.best_performance(unseen_data_set, coll_type)
     for el in best_perf_alg:
-        print(print_data_row(el, coll_type))
+        print(print_data_row(el, 1))
 
     print('----------------------------------------------------------------')
 
@@ -103,7 +89,7 @@ def selection_experiments(args):
    #          hockney_model_parameters, lb_isend[0], lb_isend[1], unseen_data_set)
 
     for analy_est, best_alg in zip(model_opt_alg, best_perf_alg):
-        print(print_data_row(analy_est, coll_type), ' -- ',
+        print(print_data_row(analy_est, 1), ' -- ',
               '{}%'.format(round(analy_est[3]/best_alg[3] * 100)))
         #print(print_data_row(analy_est, coll_type))
 
@@ -113,7 +99,7 @@ def selection_experiments(args):
     #else:
     #    ompi_opt_alg = exp.ompi_optimal_bcast_alg(unseen_data_set)
     for ompi_alg, best_alg in zip(ompi_opt_alg, best_perf_alg):
-        print(print_data_row(ompi_alg, coll_type), ' -- ',
+        print(print_data_row(ompi_alg, 1), ' -- ',
               '{}%'.format(round(ompi_alg[3]/best_alg[3] * 100)))
         #print(print_data_row(ompi_alg, coll_type))
     Y_exp = []
@@ -184,8 +170,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--nump", required=True, help="Number of processes")
-    parser.add_argument("--coll", required=True,
-                        help="Type of collective operation")
     args = parser.parse_args()
     args.path = os.getcwd()
     selection_experiments(args)
