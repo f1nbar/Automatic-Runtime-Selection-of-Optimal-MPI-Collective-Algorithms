@@ -3,7 +3,8 @@ import argparse
 import modelling as exp
 import numpy as np
 import matplotlib.pyplot as plt
-plt.rcParams.update({'font.size': 23})
+plt.style.use('seaborn-whitegrid')
+plt.rc('lines', linewidth=2)
 
 def print_data_row(row, coll):
     s = str(row[0]) + ' ' + str(row[1]) + " " + str(row[3]) + " "
@@ -115,9 +116,9 @@ def selection_experiments(args):
                   'Open MPI'
                   ]
     colors = {
-        'Best': 'green',
-        'Model-based': 'r',
-        'Open MPI': 'blue'
+        'Best': 'limegreen',
+        'Model-based': 'orangered',
+        'Open MPI': 'dodgerblue'
     }
     linestyle = {
         'Best': '-',
@@ -134,35 +135,32 @@ def selection_experiments(args):
     Y.append(Y_exp)
     Y.append(Y_model)
     Y.append(Y_ompi)
-    #They are not the same size..,46 and 15
-    #print(len(X))
-    #print(len(Y[2])k)
     i = 0
 
-    title_font = {'family': 'serif',
+    title_font = {'family': 'monospace',
                   'color':  'black',
                   'weight': 'normal',
-                  'size': 20,
                   }
 
     for name in data_types:
         plt.plot(
             X,
             Y[i],
-            color=colors[name],
             linestyle=linestyle[name],
             linewidth=lw,
+            color=colors[name],
             label=data_types[i])
         legend = plt.legend(
             loc='upper left',
             frameon=False,
             title= 'P = ' + str(args.nump),
-            prop=dict(size='x-small'))
+            prop=dict(size='small'))
         i += 1
+
     plt.xscale('log', base=2)
     plt.xlabel('Message sizes (Bytes)')  # , fontsize=23)
-    plt.ylabel('Time(sec)')  # , fontsize=23)
-    coll_name = 'MPI_Scatter' if coll_type else 'MPI_Bcast'
+    plt.ylabel('Time (seconds)')  # , fontsize=23)
+    coll_name = 'MPI_Scatter'
     plt.title(f'{coll_name} P = {args.nump}', fontdict=title_font)
     plt.show()
 
