@@ -14,7 +14,7 @@
 typedef enum scatter_algorithms {
     BASIC_LINEAR,
     BINOMIAL,
-    LINEAR_SYNC
+    LINEAR_NB
 } scatter_algorithms;
 
 typedef struct time_precision {
@@ -72,9 +72,9 @@ int scatter(int msg_min, int msg_max, int stride){
     default_time_precision(&precision);
     double time;
 
-    if (size> MAX_PROCESSES || size % 2 != 0) {
+    if (size % 2 != 0) {
         if (rank == 0) {
-            printf("You have to use an even number of processes (at most %d)\n", MAX_PROCESSES);
+            printf("You have to use an even number of processes");
         }
         MPI_Finalize();
         exit(0);
