@@ -7,7 +7,6 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_cdf.h>
 
-#define MAX_PROCESSES 10
 #define MAX_SIZE 8388608;
 #define SEGSIZE 8192 // 8kB
 #define STRIDE 8192// 32 kB
