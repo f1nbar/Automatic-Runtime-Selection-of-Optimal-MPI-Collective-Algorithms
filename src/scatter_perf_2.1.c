@@ -13,8 +13,7 @@
 
 typedef enum scatter_algorithms {
     BASIC_LINEAR,
-    BINOMIAL,
-    LINEAR_NB
+    BINOMIAL
 } scatter_algorithms;
 
 typedef struct time_precision {
@@ -38,6 +37,8 @@ int set_mca_variable(const char *variable_name, int value) {
     if (err != MPI_SUCCESS)
         fprintf(stdout, "Error getting %s\n", variable_name);
     err = MPI_T_cvar_handle_alloc(cidx, NULL, &chandle, &nvals);
+    if (err != MPI_SUCCESS)
+        fprintf(stdout, "Error allocating \n");
     err = MPI_T_cvar_write(chandle, &value);
     if (err != MPI_SUCCESS)
         fprintf(stdout, "Error setting %s \n", variable_name);
@@ -82,7 +83,7 @@ int scatter(int msg_min, int msg_max, int stride){
 
     while (msg_size <= msg_max){
 
-        for (alg = 1; alg <= 3; alg++ ){
+        for (alg = 1; alg <= 2; alg++ ){
             recvbuf = (char *)malloc(msg_size);
             sendbuf = (char *)malloc(msg_size * size);
             initialize_char_array(msg_size, sendbuf);
