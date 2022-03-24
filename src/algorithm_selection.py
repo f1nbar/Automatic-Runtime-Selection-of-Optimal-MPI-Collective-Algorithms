@@ -32,9 +32,9 @@ def selection_experiments(args):
     lb_isend = exp.lin_reg(X, Y)
     vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in lb_isend]
     el = ", ".join(vformat)
-    print("lb_isend: ");
-    print(lb_isend)
-    train_data_path = 'data/csi_'+ str(args.nump)
+#    print("lb_isend: ");
+#    print(lb_isend)
+    train_data_path = 'data/csi_long_'+ str(args.nump)
     coll_type = 1
     #converts data to list
     train_data_set = exp.exp_data_list(train_data_path, coll_type)
@@ -42,11 +42,10 @@ def selection_experiments(args):
     # Hockney model parameters are measured using collective algorithms
     hockney_model_parameters = []
     coll_algorithms = exp.scatter_algorithms
-    if (args.ver == 2.1):
+    if (args.ver == "2.1"):
+        print("Yes!")
         #Open MPI 2.1 does not contain Linear Non Blocking Algorithm 
-        coll_algorithms = coll_algorithms.pop()
-
-    print("Collective Algorithms for Scatter: ", coll_algorithms)
+        coll_algorithms.pop()
 
     # Calculate latency and bandwidth using collective algorithms, iterate through algorithms
     for alg in coll_algorithms:
@@ -61,7 +60,9 @@ def selection_experiments(args):
         vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in value]
         el = ", ".join(vformat)
 
-    unseen_data_path = 'data/csi_short' + str(args.nump)
+    unseen_data_path = 'data/csi_short_' + str(args.nump)
+    if not unseen_data_path:
+        print("Given file is not found!")
     unseen_data_set = exp.exp_data_list(unseen_data_path, coll_type)
 
     unseen_data_set = [
