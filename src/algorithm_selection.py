@@ -42,6 +42,11 @@ def selection_experiments(args):
     # Hockney model parameters are measured using collective algorithms
     hockney_model_parameters = []
     coll_algorithms = exp.scatter_algorithms
+    if (args.ver == 2.1):
+        #Open MPI 2.1 does not contain Linear Non Blocking Algorithm 
+        coll_algorithms = coll_algorithms.pop()
+
+    print("Collective Algorithms for Scatter: ", coll_algorithms)
 
     # Calculate latency and bandwidth using collective algorithms, iterate through algorithms
     for alg in coll_algorithms:
@@ -66,18 +71,14 @@ def selection_experiments(args):
         print('Unseen performance data does not exist!')
         return
 
-    best_perf_alg = exp.best_performance(unseen_data_set, coll_type)
+    best_perf_alg = exp.best_performance(unseen_data_set, coll_type, len(coll_algorithms))
     for el in best_perf_alg:
         print(print_data_row(el, 1))
 
     print('----------------------------------------------------------------')
 
-  #  if coll_type:
     model_opt_alg = exp.optimal_scatter_algorithm_by_model(
-            hockney_model_parameters, unseen_data_set)
-   # else:
-   #     model_opt_alg = exp.optimal_bcast_algorithm_by_model(
-   #          hockney_model_parameters, lb_isend[0], lb_isend[1], unseen_data_set)
+            hockney_model_parameters, unseen_data_set, len(coll_algorithms))
 
     for analy_est, best_alg in zip(model_opt_alg, best_perf_alg):
         print(print_data_row(analy_est, 1), ' -- ',
@@ -85,14 +86,20 @@ def selection_experiments(args):
         #print(print_data_row(analy_est, coll_type))
 
     print('----------------------------------------------------------------')
-    #if coll_type:
-    ompi_opt_alg = exp.ompi_optimal_scatter_alg(unseen_data_set)
-    #else:
-    #    ompi_opt_alg = exp.ompi_optimal_bcast_alg(unseen_data_set)
+
+    #Newer version of OMPI has a refined algorithm selection process
+
+    if (args.ver == "4.1"):
+        ompi_opt_alg = exp.ompi_optimal_scatter_alg(unseen_data_set)
+
+    elif (args.ver == "2.1"):
+        #TODO write method for older OMPI version
+        ompi_opt_alg = exp.ompi_optimal_scatter_alg(unseen_data_set)
+
     for ompi_alg, best_alg in zip(ompi_opt_alg, best_perf_alg):
         print(print_data_row(ompi_alg, 1), ' -- ',
               '{}%'.format(round(ompi_alg[3]/best_alg[3] * 100)))
-        #print(print_data_row(ompi_alg, coll_type))
+
     Y_exp = []
     Y_model = []
     Y_ompi = []

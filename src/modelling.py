@@ -66,12 +66,9 @@ def exp_data_list(file_path, coll_type=0):
 
     return data
 
-def best_performance(data_list, coll_type):
+def best_performance(data_list, coll_type, alg_count):
    #The function returns list of best performance algorithms for  message size
     beg = 0
-    # Number of collective algorithms for MPI_Bcast and MPI_Gather 
-    #Scatter
-    alg_count = 3 #if coll_type else 6
     best_perf_alg = []
     while beg < len(data_list):
         best_alg = min(data_list[beg:beg + alg_count], key=lambda x: x[3])
@@ -81,8 +78,7 @@ def best_performance(data_list, coll_type):
     return best_perf_alg
 
 def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0, coll_type=0):
-    """Processing data for linear regression
-    """
+    #Processing data for linear regression
     row = []
     ms = SEGSIZE
     for row in data:
@@ -118,8 +114,7 @@ def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0, coll_typ
 
 
 def experimental_messages(data_list):
-    '''This method extracts messages from hierarchical broadcast experiment data
-    '''
+    #This method extracts messages from hierarchical broadcast experiment data
     messages = []
     if not data_list:
         return messages
@@ -223,7 +218,7 @@ def ompi_optimal_scatter_alg(data_list):
                 break
     return get_alg_exp
 
-def optimal_scatter_algorithm_by_model(hm_params, data_list):
+def optimal_scatter_algorithm_by_model(hm_params, data_list, alg_count):
     if len(data_list) == 0:
         print("Data list is empty!")
         return -1
@@ -233,7 +228,7 @@ def optimal_scatter_algorithm_by_model(hm_params, data_list):
     analy_estimation = []
     for m in messages:
         analytical_estimation = []
-        for algorithmid in range(1, 2):
+        for algorithmid in range(1, alg_count):
             value_of_combination = scatter_alg_cost(
                 p, hm_params[algorithmid-1][0], hm_params[algorithmid-1][1], m, algorithmid)
 
