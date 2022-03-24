@@ -34,19 +34,14 @@ def selection_experiments(args):
     el = ", ".join(vformat)
     print("lb_isend: ");
     print(lb_isend)
-    train_data_path = 'data/6_local_long.txt'# + str(args.nump)
+    train_data_path = 'data/csi_'+ str(args.nump)
     coll_type = 1
     #converts data to list
     train_data_set = exp.exp_data_list(train_data_path, coll_type)
 
     # Hockney model parameters are measured using collective algorithms
     hockney_model_parameters = []
-    coll_algorithms = []
-    if not coll_type:
-        coll_algorithms = exp.scatter_algorithms
-    else:
-        coll_algorithms = exp.scatter_algorithms
-        # change for future algorithm
+    coll_algorithms = exp.scatter_algorithms
 
     # Calculate latency and bandwidth using collective algorithms, iterate through algorithms
     for alg in coll_algorithms:
@@ -61,13 +56,8 @@ def selection_experiments(args):
         vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in value]
         el = ", ".join(vformat)
 
-    if coll_type:
-        unseen_data_path = 'data/6_local_short.txt'
-    else:
-        unseen_data_path = 'data/short.txt'
-
+    unseen_data_path = 'data/csi_short' + str(args.nump)
     unseen_data_set = exp.exp_data_list(unseen_data_path, coll_type)
-
 
     unseen_data_set = [
         td for td in unseen_data_set if td[1] in range(65536, 827382)]
@@ -167,7 +157,8 @@ def selection_experiments(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nump", required=True, help="Number of processes")
+    parser.add_argument("--nump", required=True, help="Number of Processes")
+    parser.add_argument("--ver", required=True, help="Open MPI Version, Supported: 2.1, 4.1")
     args = parser.parse_args()
     args.path = os.getcwd()
     selection_experiments(args)
