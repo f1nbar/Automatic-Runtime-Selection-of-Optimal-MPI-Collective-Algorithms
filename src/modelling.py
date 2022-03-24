@@ -1,3 +1,4 @@
+from _typeshed import OpenTextMode
 import math
 import numpy as np
 from sklearn.linear_model import HuberRegressor
@@ -150,8 +151,8 @@ def scatter_linear_nb(p, a, b, m):
     coff = (p - 1)
     return (coff * (a + m * b), coff)
 
-def ompi_optimal_scatter_alg(data_list):
-    ## Reimplementation of the Open MPI fixed decision algorithm
+def new_ompi_optimal_scatter_alg(data_list):
+    ## Reimplementation of the Open MPI fixed decision algorithm, version 4.1
     opt_scatter_algorithm = 1  # default value for scatter
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
@@ -217,6 +218,34 @@ def ompi_optimal_scatter_alg(data_list):
                 get_alg_exp.append(expdata)
                 break
     return get_alg_exp
+
+def ompi_optimal_scatter_alg(data_list):
+    ## Reimplementation of the Open MPI fixed decision algorithm, version 2.1
+    opt_scatter_algorithm = 1  # default value for scatter
+    messages = experimental_messages(data_list)
+    communicator_size = int(data_list[0][0])
+    analy_estimation = []
+
+    small_block_size = 300
+    small_comm_size = 10
+
+    for message_size in messages:
+
+        if ((communicator_size > small_comm_size) and (message_size < small_block_size)):
+            opt_scatter_algorithm = 2
+        else:
+            opt_scatter_algorithm = 1
+
+        analy_estimation.append((message_size, opt_scatter_algorithm))
+
+    get_alg_exp = []
+    for opalg in analy_estimation:
+        for expdata in data_list:
+            if expdata[2] == opalg[1] and expdata[1] == opalg[0]:
+                get_alg_exp.append(expdata)
+                break
+    return get_alg_exp
+
 
 def optimal_scatter_algorithm_by_model(hm_params, data_list, alg_count):
     if len(data_list) == 0:
