@@ -29,6 +29,9 @@ void default_time_precision(time_precision *precision) {
 
 const char *coll_tuned_scatter_algorithm_segmentsize= "coll_tuned_scatter_algorithm_segmentsize";
 const char *tuned_scatter_algorithm= "coll_tuned_scatter_algorithm";
+const char *tuned_scatter_algorithm_one= "OMPI_MCA_coll_tuned_scatter_algorithm=1";
+const char *tuned_scatter_algorithm_two= "OMPI_MCA_coll_tuned_scatter_algorithm=2";
+const char *tuned_scatter_algorithm_segmentsize= "OMPI_MCA_coll_tuned_scatter_algorithm_segmentsize=8192";
 
 int set_mca_variable(const char *variable_name, int value) {
     int cidx, nvals, err;
@@ -44,6 +47,21 @@ int set_mca_variable(const char *variable_name, int value) {
         fprintf(stdout, "Error setting %s \n", variable_name);
     MPI_T_cvar_handle_free(&chandle); 
     return EXIT_SUCCESS;
+}
+
+void set_scatter_algorithm_system(int alg){
+    if (alg == 1){
+        system(tuned_scatter_algorithm_one);
+    }
+    else system(tuned_scatter_algorithm_two);
+}
+
+void set_scatter_segmentsize_system(){
+    system(tuned_scatter_algorithm_segmentsize);
+}
+
+void verify_mca_params(){
+
 }
 
 void initialize_char_array(int length, char *s) {
@@ -87,8 +105,10 @@ int scatter(int msg_min, int msg_max, int stride){
             recvbuf = (char *)malloc(msg_size);
             sendbuf = (char *)malloc(msg_size * size);
             initialize_char_array(msg_size, sendbuf);
-            set_mca_variable(tuned_scatter_algorithm, alg);
-            set_mca_variable(coll_tuned_scatter_algorithm_segmentsize, SEGSIZE);
+            //set_mca_variable(tuned_scatter_algorithm, alg);
+            set_scatter_algorithm_system(alg);
+            set_scatter_segmentsize_system();
+           // set_mca_variable(coll_tuned_scatter_algorithm_segmentsize, SEGSIZE);
             MPI_Comm_dup(MPI_COMM_WORLD, &dump_comm);
             if (rank == 0)
                 T = (double *)malloc(sizeof(double) * precision.max_reps);
