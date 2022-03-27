@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 plt.style.use('seaborn-whitegrid')
 plt.rc('lines', linewidth=2)
 
-def print_data_row(row, coll):
+def print_data_row(row):
     s = str(row[0]) + ' ' + str(row[1]) + " " + str(row[3]) + " "
     s += exp.scatter_algorithms[int(row[2] - 2)][1]
     return s.strip()
@@ -18,14 +18,13 @@ def selection_experiments(args):
     X = []
     Y = []
 
-    ised_data = exp.exp_data_list(
-        'data/isend_data.txt', 1)
+    isend_data = exp.exp_data_list('data/isend_data.txt')
 
-    if not ised_data:
+    if not isend_data:
         print('Given file is not found!')
         return
 
-    for it in ised_data:
+    for it in isend_data:
         X.append(it[0])
         Y.append(it[1])
 
@@ -37,14 +36,13 @@ def selection_experiments(args):
     train_data_path = 'data/csi_long_'+ str(args.nump)
     coll_type = 1
     #converts data to list
-    train_data_set = exp.exp_data_list(train_data_path, coll_type)
+    train_data_set = exp.exp_data_list(train_data_path)
 
     # Hockney model parameters are measured using collective algorithms
     hockney_model_parameters = []
     coll_algorithms = exp.scatter_algorithms
     if (args.ver == "2.1"):
-        print("Yes!")
-        #Open MPI 2.1 does not contain Linear Non Blocking Algorithm 
+        #Open MPI 2.1 does not contain Linear Non Blocking Algorithm
         coll_algorithms.pop()
 
     # Calculate latency and bandwidth using collective algorithms, iterate through algorithms
@@ -63,10 +61,10 @@ def selection_experiments(args):
     unseen_data_path = 'data/csi_short_' + str(args.nump)
     if not unseen_data_path:
         print("Given file is not found!")
-    unseen_data_set = exp.exp_data_list(unseen_data_path, coll_type)
+    unseen_data_set = exp.exp_data_list(unseen_data_path)
 
     unseen_data_set = [
-        td for td in unseen_data_set if td[1] in range(65536, 827382)]
+        td for td in unseen_data_set if td[1] in range(65536,1048577)]
 
     if not unseen_data_set:
         print('Unseen performance data does not exist!')
@@ -74,7 +72,7 @@ def selection_experiments(args):
 
     best_perf_alg = exp.best_performance(unseen_data_set, coll_type, len(coll_algorithms))
     for el in best_perf_alg:
-        print(print_data_row(el, 1))
+        print(print_data_row(el))
 
     print('----------------------------------------------------------------')
 
@@ -82,7 +80,7 @@ def selection_experiments(args):
             hockney_model_parameters, unseen_data_set, len(coll_algorithms))
 
     for analy_est, best_alg in zip(model_opt_alg, best_perf_alg):
-        print(print_data_row(analy_est, 1), ' -- ',
+        print(print_data_row(analy_est), ' -- ',
               '{}%'.format(round(analy_est[3]/best_alg[3] * 100)))
         #print(print_data_row(analy_est, coll_type))
 
@@ -91,14 +89,13 @@ def selection_experiments(args):
     #Newer version of OMPI has a refined algorithm selection process
 
     if (args.ver == "4.1"):
-        ompi_opt_alg = exp.ompi_optimal_scatter_alg(unseen_data_set)
+        ompi_opt_alg = exp.new_ompi_optimal_scatter_alg(unseen_data_set)
 
     elif (args.ver == "2.1"):
-        #TODO write method for older OMPI version
         ompi_opt_alg = exp.ompi_optimal_scatter_alg(unseen_data_set)
 
     for ompi_alg, best_alg in zip(ompi_opt_alg, best_perf_alg):
-        print(print_data_row(ompi_alg, 1), ' -- ',
+        print(print_data_row(ompi_alg), ' -- ',
               '{}%'.format(round(ompi_alg[3]/best_alg[3] * 100)))
 
     Y_exp = []

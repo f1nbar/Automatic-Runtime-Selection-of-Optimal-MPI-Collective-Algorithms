@@ -19,6 +19,7 @@ scatter_algorithms = [
     (2, "BINOMIAL",
      "(math.floor(math.log({3}, 2)) * {0} + {1}*{2}) + math.log({3}, 2)*{0}"),
     # T = (P - 1) * (a + b*m)
+    # Linear Non Blocking algorithm added in newer versions of Open MPI
     (3, "LINEAR_NB", "({3} - 1)*({0} + {1}*{2})"),
 ]
 
@@ -47,7 +48,7 @@ def lin_reg(X, Y):
 
     return huber.intercept_, huber.coef_[0]
 
-def exp_data_list(file_path, coll_type=0):
+def exp_data_list(file_path):
     """This method returns list of data from file.
     Experimental datas are numbers saved as rows.
     This method reads data from file and converts to a list.
@@ -89,28 +90,15 @@ def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0, coll_typ
             ns = row[1] / ms
             #if coll_type:
             coff = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
-            #else:
-               # coff = bcast_alg_cost(row[0], a, b, _a, _b, ns, ms, row[2])[
-                    #1] + row[0] - 1
-
-            if not coll_type:  # bcast
-                if row[2] == -1:  # split-binary broadcast algorithm
-                    message_sizes.append((coff * ms + row[1] / 2) / (coff + 1))
-                    #message_sizes.append((coff * ms) / (coff + 1))
-                    times.append(row[3] / (coff + 1))
-                else:
-                    message_sizes.append(ms)
-                    times.append(row[3] / coff)
-            else:  # scatter 
-                if row[2] == 1: # or row[2] == 2:
-                    message_sizes.append(row[1])
-                    times.append(row[3] / coff)
-                elif row[2] == 2:
-                    message_sizes.append((row[1] * (row[0] - 1))/coff)
-                    times.append(row[3] / coff)
-                else:
-                    message_sizes.append(row[1] / 2)
-                    times.append(row[3] / (coff * 2))
+            if row[2] == 1: # or row[2] == 2:
+                message_sizes.append(row[1])
+                times.append(row[3] / coff)
+            elif row[2] == 2:
+                message_sizes.append((row[1] * (row[0] - 1))/coff)
+                times.append(row[3] / coff)
+            else:
+                message_sizes.append(row[1] / 2)
+                times.append(row[3] / (coff * 2))
 
 
 def experimental_messages(data_list):
@@ -220,7 +208,7 @@ def new_ompi_optimal_scatter_alg(data_list):
 
 def ompi_optimal_scatter_alg(data_list):
     ## Reimplementation of the Open MPI fixed decision algorithm, version 2.1
-    opt_scatter_algorithm = 1  # default value for scatter
+    opt_scatter_algorithm = 0  # default value for scatter
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
@@ -231,9 +219,10 @@ def ompi_optimal_scatter_alg(data_list):
     for message_size in messages:
 
         if ((communicator_size > small_comm_size) and (message_size < small_block_size)):
-            opt_scatter_algorithm = 2
-        else:
+            print("Message size: ", message_size)
             opt_scatter_algorithm = 1
+        else:
+            opt_scatter_algorithm = 2
 
         analy_estimation.append((message_size, opt_scatter_algorithm))
 
