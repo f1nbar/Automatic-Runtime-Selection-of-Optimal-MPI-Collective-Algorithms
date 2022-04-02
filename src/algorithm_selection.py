@@ -1,5 +1,6 @@
 import os
 import argparse
+import re
 import modelling as exp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,8 +34,8 @@ def selection_experiments(args):
     el = ", ".join(vformat)
 #    print("lb_isend: ");
 #    print(lb_isend)
-    train_data_path = 'data/csi_long_'+ str(args.nump)
-    coll_type = 1
+    #train_data_path = 'data/csi_long_'+ str(args.nump)
+    train_data_path = 'data/sonic_long_'+ str(args.nump)
     #converts data to list
     train_data_set = exp.exp_data_list(train_data_path)
 
@@ -50,7 +51,7 @@ def selection_experiments(args):
         X = []
         Y = []
         exp.data_processing(train_data_set, 0, 0,
-                            lb_isend[0], lb_isend[1], X, Y, alg[0], coll_type)
+                            lb_isend[0], lb_isend[1], X, Y, alg[0])
         hockney_model_parameters.append(exp.lin_reg(X, Y))
         print("Hockney model params: ")
         print(hockney_model_parameters[-1])
@@ -58,19 +59,20 @@ def selection_experiments(args):
         vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in value]
         el = ", ".join(vformat)
 
-    unseen_data_path = 'data/csi_short_' + str(args.nump)
+    #unseen_data_path = 'data/csi_short_' + str(args.nump)
+    unseen_data_path = 'data/sonic_short_' + str(args.nump)
     if not unseen_data_path:
         print("Given file is not found!")
     unseen_data_set = exp.exp_data_list(unseen_data_path)
 
     unseen_data_set = [
-        td for td in unseen_data_set if td[1] in range(65536,1048577)]
+        td for td in unseen_data_set if td[1] in range(32768, 1024000)]
 
     if not unseen_data_set:
         print('Unseen performance data does not exist!')
         return
 
-    best_perf_alg = exp.best_performance(unseen_data_set, coll_type, len(coll_algorithms))
+    best_perf_alg = exp.best_performance(unseen_data_set, len(coll_algorithms))
     for el in best_perf_alg:
         print(print_data_row(el))
 
@@ -82,7 +84,6 @@ def selection_experiments(args):
     for analy_est, best_alg in zip(model_opt_alg, best_perf_alg):
         print(print_data_row(analy_est), ' -- ',
               '{}%'.format(round(analy_est[3]/best_alg[3] * 100)))
-        #print(print_data_row(analy_est, coll_type))
 
     print('----------------------------------------------------------------')
 
@@ -104,7 +105,7 @@ def selection_experiments(args):
 
     for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
         Y_exp.append(alg1[3])
-        Y_model.append(alg2[3])
+        Y_model.append(alg1[3])
         Y_ompi.append(alg3[3])
     data_types = ['Best',
                   'Model-based',
