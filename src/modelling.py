@@ -31,6 +31,7 @@ def root_overhead(p, a, b):
     """
     return a + p * b
 
+
 def lin_reg(X, Y):
     """Huber regression is employed to buid linear regression.
     """
@@ -47,6 +48,7 @@ def lin_reg(X, Y):
     huber.fit(X[:, np.newaxis], Y)
 
     return huber.intercept_, huber.coef_[0]
+
 
 def exp_data_list(file_path):
     """This method returns list of data from file.
@@ -67,19 +69,22 @@ def exp_data_list(file_path):
 
     return data
 
-def best_performance(data_list, coll_type, alg_count):
-   #The function returns list of best performance algorithms for  message size
+
+def best_performance(data_list, alg_count):
+    # The function returns list of best performance algorithms for  message size
     beg = 0
     best_perf_alg = []
     while beg < len(data_list):
         best_alg = min(data_list[beg:beg + alg_count], key=lambda x: x[3])
         if best_alg:
+            print(best_alg)
             best_perf_alg.append(best_alg)
         beg += alg_count
     return best_perf_alg
 
-def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0, coll_type=0):
-    #Processing data for linear regression
+
+def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0):
+    # Processing data for linear regression
     row = []
     ms = SEGSIZE
     for row in data:
@@ -87,14 +92,12 @@ def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0, coll_typ
         if alg_id:
             cond = (row[2] == alg_id)
         if cond:
-            ns = row[1] / ms
-            #if coll_type:
             coff = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
-            if row[2] == 1: # or row[2] == 2:
+            if row[2] == 1:  # or row[2] == 2:
                 message_sizes.append(row[1])
                 times.append(row[3] / coff)
             elif row[2] == 2:
-                message_sizes.append((row[1] * (row[0] - 1))/coff)
+                message_sizes.append((row[1] * (row[0] - 1)) / coff)
                 times.append(row[3] / coff)
             else:
                 message_sizes.append(row[1] / 2)
@@ -102,7 +105,7 @@ def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0, coll_typ
 
 
 def experimental_messages(data_list):
-    #This method extracts messages from hierarchical broadcast experiment data
+    # This method extracts messages from hierarchical broadcast experiment data
     messages = []
     if not data_list:
         return messages
@@ -113,6 +116,7 @@ def experimental_messages(data_list):
             mes = el[1]
             messages.append(el[1])
     return messages
+
 
 def scatter_alg_cost(p, a, b, m, alg_id):
     res = (0, 0)
@@ -128,71 +132,74 @@ def scatter_alg_cost(p, a, b, m, alg_id):
 
 def scatter_linear(p, a, b, m):
     coff = (p - 1)
-    return (coff * (a + m * b), coff)
+    return coff * (a + m * b), coff
+
 
 def scatter_binomial(p, a, b, m):
     coff = math.floor(math.log(p, 2))
-    return (coff * a + (p - 1) * m * b, coff)
+    return coff * a + (p - 1) * m * b, coff
+
 
 def scatter_linear_nb(p, a, b, m):
     coff = (p - 1)
-    return (coff * (a + m * b), coff)
+    return coff * (a + m * b), coff
+
 
 def new_ompi_optimal_scatter_alg(data_list):
-    ## Reimplementation of the Open MPI fixed decision algorithm, version 4.1
+    # Reimplementation of the Open MPI fixed decision algorithm, version 4.1
     opt_scatter_algorithm = 1  # default value for scatter
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
 
     for message_size in messages:
-        if (communicator_size < 4):
-            if (message_size < 2):
+        if communicator_size < 4:
+            if message_size < 2:
                 opt_scatter_algorithm = 3
-            elif (message_size < 131072):
+            elif message_size < 131072:
                 opt_scatter_algorithm = 1
-            elif (message_size < 262144):
-                opt_scatter_algorithm = 3
-            else:
-                opt_scatter_algorithm = 1
-        elif (communicator_size < 8):
-            if (message_size < 2048):
-                opt_scatter_algorithm = 2
-            elif (message_size < 4096):
-                opt_scatter_algorithm = 1
-            elif (message_size < 8192):
-                opt_scatter_algorithm = 2
-            elif (message_size < 32768):
-                opt_scatter_algorithm = 1
-            elif (message_size < 1048576):
+            elif message_size < 262144:
                 opt_scatter_algorithm = 3
             else:
                 opt_scatter_algorithm = 1
-        elif (communicator_size < 16):
-            if (message_size < 16384):
+        elif communicator_size < 8:
+            if message_size < 2048:
                 opt_scatter_algorithm = 2
-            elif (message_size < 1048576):
+            elif message_size < 4096:
+                opt_scatter_algorithm = 1
+            elif message_size < 8192:
+                opt_scatter_algorithm = 2
+            elif message_size < 32768:
+                opt_scatter_algorithm = 1
+            elif message_size < 1048576:
                 opt_scatter_algorithm = 3
             else:
                 opt_scatter_algorithm = 1
-        elif (communicator_size < 32):
-            if (message_size < 16384):
+        elif communicator_size < 16:
+            if message_size < 16384:
                 opt_scatter_algorithm = 2
-            elif (message_size < 32768):
+            elif message_size < 1048576:
+                opt_scatter_algorithm = 3
+            else:
+                opt_scatter_algorithm = 1
+        elif communicator_size < 32:
+            if message_size < 16384:
+                opt_scatter_algorithm = 2
+            elif message_size < 32768:
                 opt_scatter_algorithm = 1
             else:
                 opt_scatter_algorithm = 3
-        elif (communicator_size < 64):
-            if (message_size < 512):
+        elif communicator_size < 64:
+            if message_size < 512:
                 opt_scatter_algorithm = 2
-            elif (message_size < 8192):
+            elif message_size < 8192:
                 opt_scatter_algorithm = 3
-            elif (message_size < 16384):
+            elif message_size < 16384:
                 opt_scatter_algorithm = 2
             else:
                 opt_scatter_algorithm = 3
         else:
-            if (message_size < 512):
+            if message_size < 512:
                 opt_scatter_algorithm = 2
             else:
                 opt_scatter_algorithm = 3
@@ -206,9 +213,10 @@ def new_ompi_optimal_scatter_alg(data_list):
                 break
     return get_alg_exp
 
+
 def ompi_optimal_scatter_alg(data_list):
-    ## Reimplementation of the Open MPI fixed decision algorithm, version 2.1
-    opt_scatter_algorithm = 0  # default value for scatter
+    # Reimplementation of the Open MPI fixed decision algorithm, version 2.1
+    opt_scatter_algorithm = 1
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
@@ -218,11 +226,10 @@ def ompi_optimal_scatter_alg(data_list):
 
     for message_size in messages:
 
-        if ((communicator_size > small_comm_size) and (message_size < small_block_size)):
-            print("Message size: ", message_size)
-            opt_scatter_algorithm = 1
-        else:
+        if (communicator_size > small_comm_size) and (message_size < small_block_size):
             opt_scatter_algorithm = 2
+        else:
+            opt_scatter_algorithm = 1
 
         analy_estimation.append((message_size, opt_scatter_algorithm))
 
@@ -247,11 +254,9 @@ def optimal_scatter_algorithm_by_model(hm_params, data_list, alg_count):
         analytical_estimation = []
         for algorithmid in range(1, alg_count):
             value_of_combination = scatter_alg_cost(
-                p, hm_params[algorithmid-1][0], hm_params[algorithmid-1][1], m, algorithmid)
-
+                p, hm_params[algorithmid - 1][0], hm_params[algorithmid - 1][1], m, algorithmid)
             analytical_estimation.append(
                 (algorithmid, value_of_combination, m))
-
         min_val = min(analytical_estimation, key=lambda x: x[1])
         analy_estimation.append(min_val)
 
