@@ -1,3 +1,4 @@
+from logging import root
 import math
 import numpy as np
 from sklearn.linear_model import HuberRegressor
@@ -16,8 +17,7 @@ scatter_algorithms = [
     # T = (P - 1) * (a + b*m)
     (1, "BASIC_LINEAR", "({3} - 1)*({0} + {1}*{2})"),
     # T = ceil(log2(P))*(ceil(log2(P) + 1))/2 *(a + mb) + log2(p)*a
-    (2, "BINOMIAL",
-     "(math.floor(math.log({3}, 2)) * {0} + {1}*{2}) + math.log({3}, 2)*{0}"),
+    (2, "BINOMIAL", "(math.floor(math.log({3}, 2)) * {0} + {1}*{2}) + math.log({3}, 2)*{0}"),
     # T = (P - 1) * (a + b*m)
     # Linear Non Blocking algorithm added in newer versions of Open MPI
     (3, "LINEAR_NB", "({3} - 1)*({0} + {1}*{2})"),
@@ -92,16 +92,17 @@ def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0):
         if alg_id:
             cond = (row[2] == alg_id)
         if cond:
-            coff = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
-            if row[2] == 1:  # or row[2] == 2:
+            ns = row[1] / ms
+            data_row = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
+            if row[2] == 1: #Linear 
                 message_sizes.append(row[1])
-                times.append(row[3] / coff)
-            elif row[2] == 2:
-                message_sizes.append((row[1] * (row[0] - 1)) / coff)
-                times.append(row[3] / coff)
-            else:
-                message_sizes.append(row[1] / 2)
-                times.append(row[3] / (coff * 2))
+                times.append(row[3] / (data_row))
+            elif row[2] == 2: #Binomial
+                message_sizes.append(ms)
+                times.append(row[3] / data_row)
+            else: #Linear NB
+                message_sizes.append(row[1])
+                times.append(row[3] / (data_row) )
 
 
 def experimental_messages(data_list):
@@ -116,6 +117,15 @@ def experimental_messages(data_list):
             mes = el[1]
             messages.append(el[1])
     return messages
+
+
+def calc_root_overhead(p, a, b):
+    """root_overhead - is linear regression function betwen numer of processes and isend time.
+    In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all
+    procedure.
+    """
+    # return gamma_dic[p]
+    return a + p * b
 
 
 def scatter_alg_cost(p, a, b, m, alg_id):
@@ -134,7 +144,6 @@ def scatter_linear(p, a, b, m):
     coff = (p - 1)
     return coff * (a + m * b), coff
 
-
 def scatter_binomial(p, a, b, m):
     coff = math.floor(math.log(p, 2))
     return coff * a + (p - 1) * m * b, coff
@@ -144,10 +153,8 @@ def scatter_linear_nb(p, a, b, m):
     coff = (p - 1)
     return coff * (a + m * b), coff
 
-
 def new_ompi_optimal_scatter_alg(data_list):
     # Reimplementation of the Open MPI fixed decision algorithm, version 4.1
-    opt_scatter_algorithm = 1  # default value for scatter
     messages = experimental_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
@@ -246,17 +253,19 @@ def optimal_scatter_algorithm_by_model(hm_params, data_list, alg_count):
     if len(data_list) == 0:
         print("Data list is empty!")
         return -1
-
     messages = experimental_messages(data_list)
     p = int(data_list[0][0])
     analy_estimation = []
+    ms = SEGSIZE
     for m in messages:
+        ns = m / ms
         analytical_estimation = []
         for algorithmid in range(1, alg_count):
             value_of_combination = scatter_alg_cost(
                 p, hm_params[algorithmid - 1][0], hm_params[algorithmid - 1][1], m, algorithmid)
             analytical_estimation.append(
                 (algorithmid, value_of_combination, m))
+
         min_val = min(analytical_estimation, key=lambda x: x[1])
         analy_estimation.append(min_val)
 

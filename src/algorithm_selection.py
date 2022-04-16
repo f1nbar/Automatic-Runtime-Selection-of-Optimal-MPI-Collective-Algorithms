@@ -35,7 +35,12 @@ def selection_experiments(args):
     #    print("lb_isend: ");
     #    print(lb_isend)
     # train_data_path = 'data/csi_long_'+ str(args.nump)
-    train_data_path = 'data/sonic_long_' + str(args.nump)
+
+
+    if args.ver == "4.1":
+        train_data_path = 'data/sonic_long_' + str(args.nump)
+    else:
+        train_data_path = 'data/csi_long_' + str(args.nump)
     # converts data to list
     train_data_set = exp.exp_data_list(train_data_path)
 
@@ -60,13 +65,16 @@ def selection_experiments(args):
         el = ", ".join(vformat)
 
     # unseen_data_path = 'data/csi_short_' + str(args.nump)
-    unseen_data_path = 'data/sonic_short_' + str(args.nump)
+    if args.ver == "4.1":
+        unseen_data_path = 'data/sonic_short_' + str(args.nump)
+    else:
+        unseen_data_path = 'data/csi_short_' + str(args.nump)
     if not unseen_data_path:
         print("Given file is not found!")
     unseen_data_set = exp.exp_data_list(unseen_data_path)
 
     unseen_data_set = [
-        td for td in unseen_data_set if td[1] in range(32768, 1024000)]
+        td for td in unseen_data_set if td[1] in range(65536, 1048576)]
 
     if not unseen_data_set:
         print('Unseen performance data does not exist!')
