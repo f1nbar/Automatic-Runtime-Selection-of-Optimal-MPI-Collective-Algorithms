@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 plt.style.use('seaborn-whitegrid')
-plt.rc('lines', linewidth=2)
+plt.rc('axes', labelsize=18)
 
 def print_data_row(row):
     s = str(row[0]) + ' ' + str(row[1]) + " " + str(row[3]) + " "
@@ -76,12 +76,15 @@ def selection_experiments(args):
     if not unseen_data_set:
         print('Unseen performance data does not exist!')
         return
+    print('----------------------------------------------------------------')
+    print('Best Perf')
 
     best_perf_alg = exp.best_performance(unseen_data_set, len(coll_algorithms))
     for el in best_perf_alg:
         print(print_data_row(el))
 
     print('----------------------------------------------------------------')
+    print('Model Perf')
 
     model_opt_alg = exp.optimal_scatter_algorithm_by_model(
         hockney_model_parameters, unseen_data_set, len(coll_algorithms))
@@ -91,6 +94,7 @@ def selection_experiments(args):
               '{}%'.format(round(analy_est[3] / best_alg[3] * 100)))
 
     print('----------------------------------------------------------------')
+    print('OMPI Perf')
 
     # Newer version of OMPI has a refined algorithm selection process
 
@@ -148,16 +152,22 @@ def selection_experiments(args):
             X,
             Y[i],
             linestyle=linestyle[name],
-            linewidth=lw,
+            linewidth=6,
             color=colors[name],
             label=data_types[i])
         i += 1
 
     plt.xscale('log', base=2)
-    plt.xlabel('Message sizes (Bytes)')  # , fontsize=23)
-    plt.ylabel('Time (seconds)')  # , fontsize=23)
+    plt.xlabel('Message sizes (Bytes)', fontsize=20)
+    plt.ylabel('Time (seconds)', fontsize=20)
     coll_name = 'MPI_Scatter'
-    plt.title(f'{coll_name} P = {args.nump}', fontdict=title_font)
+    plt.title(f'{coll_name} P = {args.nump}', fontdict=title_font, fontsize=28)
+    plt.legend(
+        loc='upper left',
+        frameon=False,
+        prop=dict(size='18'))
+    plt.tick_params(axis='x', labelsize=18)
+    plt.tick_params(axis='y', labelsize=18)
     plt.show()
 
 

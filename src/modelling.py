@@ -2,16 +2,6 @@ import math
 import numpy as np
 from sklearn.linear_model import HuberRegressor
 
-gamma_file = open('data/isend_data.txt')
-gamma_list = gamma_file.readlines()
-gamma_list = [str(el).strip() for el in gamma_list]
-gamma_dic = {}
-for g in gamma_list:
-    pairs = g.split(" ")
-    gamma_dic.setdefault(int(pairs[0]), float(pairs[1]))
-
-SEGSIZE = 8192
-
 scatter_algorithms = [
     # T = (P - 1) * (a + b*m)
     (1, "BASIC_LINEAR", "({3} - 1)*({0} + {1}*{2})"),
@@ -32,18 +22,14 @@ def root_overhead(p, a, b):
 
 
 def lin_reg(X, Y):
-    """Huber regression is employed to buid linear regression.
-    """
+    #Huber regression to calculate linear regression.
     if len(X) != len(Y):
-        print("Linear regression: Length of arrays are different: {} - {}".format(len(X), len(Y)))
+        print("Length of arrays must be the same: {} - {}".format(len(X), len(Y)))
         return -1
-
     X = np.array(X)
     Y = np.array(Y)
-
     huber = HuberRegressor(fit_intercept=True, alpha=0.0,
                            max_iter=100, epsilon=1.35)
-
     huber.fit(X[:, np.newaxis], Y)
 
     return huber.intercept_, huber.coef_[0]
@@ -95,7 +81,6 @@ def data_processing(data, a, b, message_sizes, times, alg_id=0):
     row = []
     for row in data:
         cond = (row[2] != 1) #ALG ID = 1
-        print("row 3: ",row[3])
         if alg_id:
             cond = (row[2] == alg_id)
         if cond:
@@ -235,7 +220,7 @@ def ompi_optimal_scatter_alg(data_list):
     return get_alg_exp
 
 
-def optimal_scatter_algorithm_by_model(hm_params, data_list, alg_count):
+def optimal_scatter_algorithm_by_model(hockney_params, data_list, alg_count):
     if len(data_list) == 0:
         print("Data list is empty!")
         return -1
@@ -246,7 +231,7 @@ def optimal_scatter_algorithm_by_model(hm_params, data_list, alg_count):
         analytical_estimation = []
         for algorithmid in range(1, alg_count + 1):
             value_of_combination = scatter_alg_cost(
-                p, hm_params[algorithmid - 1][0], hm_params[algorithmid - 1][1], m, algorithmid)
+                p, hockney_params[algorithmid - 1][0], hockney_params[algorithmid - 1][1], m, algorithmid)
             analytical_estimation.append(
                 (algorithmid, value_of_combination, m))
 
