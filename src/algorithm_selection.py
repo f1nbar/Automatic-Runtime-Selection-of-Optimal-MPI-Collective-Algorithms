@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 plt.style.use('seaborn-whitegrid')
 plt.rc('lines', linewidth=2)
 
-
 def print_data_row(row):
     s = str(row[0]) + ' ' + str(row[1]) + " " + str(row[3]) + " "
     s += exp.scatter_algorithms[int(row[2] - 2)][1]
@@ -19,7 +18,10 @@ def selection_experiments(args):
     X = []
     Y = []
 
-    isend_data = exp.exp_data_list('data/isend_data.txt')
+    if args.ver == "4.1":
+        isend_data = exp.exp_data_list('data/isend_data.txt')
+    else:
+        isend_data = exp.exp_data_list('data/isend_csi_data.txt')
 
     if not isend_data:
         print('Given file is not found!')
@@ -32,8 +34,6 @@ def selection_experiments(args):
     lb_isend = exp.lin_reg(X, Y)
     vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in lb_isend]
     el = ", ".join(vformat)
-    #    print("lb_isend: ");
-    #    print(lb_isend)
 
     if args.ver == "4.1":
         train_data_path = 'data/sonic_long_' + str(args.nump)
@@ -151,11 +151,6 @@ def selection_experiments(args):
             linewidth=lw,
             color=colors[name],
             label=data_types[i])
-        legend = plt.legend(
-            loc='upper left',
-            frameon=False,
-            title='P = ' + str(args.nump),
-            prop=dict(size='small'))
         i += 1
 
     plt.xscale('log', base=2)
