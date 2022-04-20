@@ -54,7 +54,7 @@ def selection_experiments(args):
         X = []
         Y = []
         exp.data_processing(train_data_set, 0, 0,
-                            lb_isend[0], lb_isend[1], X, Y, alg[0])
+                            X, Y, alg[0])
         hockney_model_parameters.append(exp.lin_reg(X, Y))
         print("Hockney model params: ")
         print(hockney_model_parameters[-1])
@@ -128,7 +128,7 @@ def selection_experiments(args):
     }
 
     lw = 4
-    X = np.array(exp.experimental_messages(unseen_data_set))
+    X = np.array(exp.extract_messages(unseen_data_set))
     Y_exp = np.array(Y_exp)
     Y_model = np.array(Y_model)
     Y_ompi = np.array(Y_ompi)

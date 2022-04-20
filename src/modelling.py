@@ -1,4 +1,3 @@
-from logging import root
 import math
 import numpy as np
 from sklearn.linear_model import HuberRegressor
@@ -66,6 +65,18 @@ def exp_data_list(file_path):
 
     return data
 
+def extract_messages(data_list):
+    messages = []
+    if not data_list:
+        return messages
+    mess = data_list[0][1]
+    messages.append(mess)
+    for el in data_list:
+        if el[1] != mess:
+            mess = el[1]
+            messages.append(el[1])
+    return messages
+
 
 def best_performance(data_list, alg_count):
     # The function returns list of best performance algorithms for  message size
@@ -83,20 +94,22 @@ def data_processing(data, a, b, message_sizes, times, alg_id=0):
     # Processing data for linear regression
     row = []
     for row in data:
-        cond = (row[2] != 1)
+        cond = (row[2] != 1) #ALG ID = 1
+        print("row 3: ",row[3])
         if alg_id:
             cond = (row[2] == alg_id)
         if cond:
-            data_row = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
+            alg_cost = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
             if row[2] == 1: #Linear 
-                message_sizes.append(row[1])
-                times.append(row[3] / (data_row))
+                message_sizes.append(row[1]) #append message size from data list
+                times.append(row[3] / (alg_cost)) #divide time elpased by cost
             elif row[2] == 2: #Binomial
-                message_sizes.append((row[1] * (row[0] - 1))/ data_row)
-                times.append(row[3] / data_row)
+                message_sizes.append((row[1] * (row[0] - 1))/ alg_cost) #Message size max for inorder binomial tree
+                times.append(row[3] / alg_cost)
             else: #Linear NB
                 message_sizes.append(row[1])
-                times.append(row[3] / (data_row) )
+                times.append(row[3] / (alg_cost) )
+
 
 #In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all procedure.
 def calc_root_overhead(p, a, b):
@@ -130,7 +143,7 @@ def scatter_linear_nb(p, a, b, m):
 
 def new_ompi_optimal_scatter_alg(data_list):
     # Reimplementation of the Open MPI fixed decision algorithm, version 4.1
-    messages = experimental_messages(data_list)
+    messages = extract_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
 
@@ -173,7 +186,7 @@ def new_ompi_optimal_scatter_alg(data_list):
                 opt_scatter_algorithm = 3
         elif communicator_size < 64:
             if message_size < 512:
-                opt_scatter_algorithm = 2
+                opt_scatter_algorthm = 2
             elif message_size < 8192:
                 opt_scatter_algorithm = 3
             elif message_size < 16384:
@@ -198,7 +211,7 @@ def new_ompi_optimal_scatter_alg(data_list):
 
 def ompi_optimal_scatter_alg(data_list):
     # Reimplementation of the Open MPI fixed decision algorithm, version 2.1
-    messages = experimental_messages(data_list)
+    messages = extract_messages(data_list)
     communicator_size = int(data_list[0][0])
     analy_estimation = []
     small_block_size = 300
@@ -226,7 +239,7 @@ def optimal_scatter_algorithm_by_model(hm_params, data_list, alg_count):
     if len(data_list) == 0:
         print("Data list is empty!")
         return -1
-    messages = experimental_messages(data_list)
+    messages = extract_messages(data_list)
     p = int(data_list[0][0])
     analy_estimation = []
     for m in messages:
