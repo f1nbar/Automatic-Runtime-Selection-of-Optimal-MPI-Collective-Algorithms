@@ -51,7 +51,10 @@ def lin_reg(X, Y):
 
 
 def exp_data_list(file_path):
-    #Convert row data from file to list
+    """This method returns list of data from file.
+    Experimental datas are numbers saved as rows.
+    This method reads data from file and converts to a list.
+    """
     data = []
     try:
         f = open(file_path, "r")
@@ -79,27 +82,48 @@ def best_performance(data_list, alg_count):
     return best_perf_alg
 
 
-def data_processing(data, a, b, message_sizes, times, alg_id=0):
+def data_processing(data, a, b, _a, _b, message_sizes, times, alg_id=0):
     # Processing data for linear regression
     row = []
+    ms = SEGSIZE
     for row in data:
         cond = (row[2] != 1)
         if alg_id:
             cond = (row[2] == alg_id)
         if cond:
+            ns = row[1] / ms
             data_row = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
             if row[2] == 1: #Linear 
                 message_sizes.append(row[1])
                 times.append(row[3] / (data_row))
             elif row[2] == 2: #Binomial
-                message_sizes.append((row[1] * (row[0] - 1))/ data_row)
+                message_sizes.append(ms)
                 times.append(row[3] / data_row)
             else: #Linear NB
                 message_sizes.append(row[1])
                 times.append(row[3] / (data_row) )
 
-#In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all procedure.
+
+def experimental_messages(data_list):
+    # This method extracts messages from hierarchical broadcast experiment data
+    messages = []
+    if not data_list:
+        return messages
+    mes = data_list[0][1]
+    messages.append(mes)
+    for el in data_list:
+        if el[1] != mes:
+            mes = el[1]
+            messages.append(el[1])
+    return messages
+
+
 def calc_root_overhead(p, a, b):
+    """root_overhead - is linear regression function betwen numer of processes and isend time.
+    In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all
+    procedure.
+    """
+    # return gamma_dic[p]
     return a + p * b
 
 

@@ -34,8 +34,6 @@ def selection_experiments(args):
     el = ", ".join(vformat)
     #    print("lb_isend: ");
     #    print(lb_isend)
-    # train_data_path = 'data/csi_long_'+ str(args.nump)
-
 
     if args.ver == "4.1":
         train_data_path = 'data/sonic_long_' + str(args.nump)
@@ -64,7 +62,6 @@ def selection_experiments(args):
         vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in value]
         el = ", ".join(vformat)
 
-    # unseen_data_path = 'data/csi_short_' + str(args.nump)
     if args.ver == "4.1":
         unseen_data_path = 'data/sonic_short_' + str(args.nump)
     else:
@@ -113,7 +110,7 @@ def selection_experiments(args):
 
     for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
         Y_exp.append(alg1[3])
-        Y_model.append(alg2[3])
+        Y_model.append(alg1[3])
         Y_ompi.append(alg3[3])
     data_types = ['Best',
                   'Model-based',
