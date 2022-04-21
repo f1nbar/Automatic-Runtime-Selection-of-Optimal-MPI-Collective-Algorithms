@@ -114,7 +114,7 @@ def selection_experiments(args):
 
     for alg1, alg2, alg3 in zip(best_perf_alg, model_opt_alg, ompi_opt_alg):
         Y_exp.append(alg1[3])
-        Y_model.append(alg1[3])
+        Y_model.append(alg2[3])
         Y_ompi.append(alg3[3])
     data_types = ['Best',
                   'Model-based',

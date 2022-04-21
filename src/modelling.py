@@ -171,7 +171,7 @@ def new_ompi_optimal_scatter_alg(data_list):
                 opt_scatter_algorithm = 3
         elif communicator_size < 64:
             if message_size < 512:
-                opt_scatter_algorthm = 2
+                 opt_scatter_algorthm = 2
             elif message_size < 8192:
                 opt_scatter_algorithm = 3
             elif message_size < 16384:
