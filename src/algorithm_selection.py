@@ -49,7 +49,7 @@ def selection_experiments(args):
         # Open MPI 2.1 does not contain Linear Non Blocking Algorithm
         coll_algorithms.pop()
 
-    # Calculate latency and bandwidth using collective algorithms, iterate through algorithms
+    # Calculate hockney model parameters for each algorithm
     for alg in coll_algorithms:
         X = []
         Y = []

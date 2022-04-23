@@ -20,6 +20,25 @@ def root_overhead(p, a, b):
     """
     return a + p * b
 
+def data_processing(data, a, b, message_sizes, times, alg_id=0):
+    # Processing data for linear regression
+    row = []
+    for row in data:
+        cond = (row[2] != 1) #ALG ID = 1
+        if alg_id:
+            cond = (row[2] == alg_id)
+        if cond:
+            alg_cost = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
+            if row[2] == 1: #Linear 
+                message_sizes.append(row[1]) #append message size from data list
+                times.append(row[3] / alg_cost) #divide time elpased by cost
+            elif row[2] == 2: #Binomial
+                message_sizes.append((row[1] * (row[0] - 1))/ alg_cost) #Message size max for inorder binomial tree
+                times.append(row[3] / alg_cost)
+            else: #Linear NB
+                message_sizes.append(row[1])
+                times.append(row[3] / alg_cost)
+
 
 def lin_reg(X, Y):
     #Huber regression to calculate linear regression.
@@ -76,24 +95,6 @@ def best_performance(data_list, alg_count):
     return best_perf_alg
 
 
-def data_processing(data, a, b, message_sizes, times, alg_id=0):
-    # Processing data for linear regression
-    row = []
-    for row in data:
-        cond = (row[2] != 1) #ALG ID = 1
-        if alg_id:
-            cond = (row[2] == alg_id)
-        if cond:
-            alg_cost = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
-            if row[2] == 1: #Linear 
-                message_sizes.append(row[1]) #append message size from data list
-                times.append(row[3] / (alg_cost)) #divide time elpased by cost
-            elif row[2] == 2: #Binomial
-                message_sizes.append((row[1] * (row[0] - 1))/ alg_cost) #Message size max for inorder binomial tree
-                times.append(row[3] / alg_cost)
-            else: #Linear NB
-                message_sizes.append(row[1])
-                times.append(row[3] / (alg_cost) )
 
 
 #In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all procedure.
