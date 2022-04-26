@@ -28,27 +28,30 @@ def data_processing(data, a, b, message_sizes, times, alg_id=0):
         if alg_id:
             cond = (row[2] == alg_id)
         if cond:
-            alg_cost = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
+            #print("alg_cost: ", alg_cost, "row[0]: ", row[0], " ,a ,b ",a," ",b," ",row[1], " ", row[2])
             if row[2] == 1: #Linear 
+                alg_cost = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
                 message_sizes.append(row[1]) #append message size from data list
-                times.append(row[3] / alg_cost) #divide time elpased by cost
+                times.append(row[3] / alg_cost) #divide time elapsed by cost
             elif row[2] == 2: #Binomial
-                message_sizes.append((row[1] * (row[0] - 1))/ alg_cost) #Message size max for inorder binomial tree
+                alg_cost = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
+                message_sizes.append((row[1] * (row[0] - 1))/ alg_cost) #Message x log2P x P-1 for inorder binomial tree
                 times.append(row[3] / alg_cost)
             else: #Linear NB
+                alg_cost = scatter_alg_cost(row[0], a, b, row[1], row[2])[1]
                 message_sizes.append(row[1])
                 times.append(row[3] / alg_cost)
 
 
 def lin_reg(X, Y):
-    #Huber regression to calculate linear regression.
+    #Huber regression to calculate linear regression for alpha and beta
     if len(X) != len(Y):
         print("Length of arrays must be the same: {} - {}".format(len(X), len(Y)))
         return -1
     X = np.array(X)
     Y = np.array(Y)
-    huber = HuberRegressor(fit_intercept=True, alpha=0.0,
-                           max_iter=100, epsilon=1.35)
+    huber = HuberRegressor(fit_intercept=True, alpha=10.0,
+                           max_iter=100, epsilon=1.30)
     huber.fit(X[:, np.newaxis], Y)
 
     return huber.intercept_, huber.coef_[0]
@@ -172,7 +175,7 @@ def new_ompi_optimal_scatter_alg(data_list):
                 opt_scatter_algorithm = 3
         elif communicator_size < 64:
             if message_size < 512:
-                 opt_scatter_algorthm = 2
+                opt_scatter_algorithm = 2
             elif message_size < 8192:
                 opt_scatter_algorithm = 3
             elif message_size < 16384:
@@ -230,12 +233,11 @@ def optimal_scatter_algorithm_by_model(hockney_params, data_list, alg_count):
     analy_estimation = []
     for m in messages:
         analytical_estimation = []
-        for algorithmid in range(1, alg_count + 1):
+        for algorithmid in range(1, alg_count+1):
             value_of_combination = scatter_alg_cost(
                 p, hockney_params[algorithmid - 1][0], hockney_params[algorithmid - 1][1], m, algorithmid)
             analytical_estimation.append(
                 (algorithmid, value_of_combination, m))
-
         min_val = min(analytical_estimation, key=lambda x: x[1])
         analy_estimation.append(min_val)
 

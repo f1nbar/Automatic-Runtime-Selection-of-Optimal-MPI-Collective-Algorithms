@@ -15,26 +15,6 @@ def print_data_row(row):
 
 def selection_experiments(args):
 
-    X = []
-    Y = []
-
-    if args.ver == "4.1":
-        isend_data = exp.exp_data_list('data/isend_data.txt')
-    else:
-        isend_data = exp.exp_data_list('data/isend_csi_data.txt')
-
-    if not isend_data:
-        print('Given file is not found!')
-        return
-
-    for it in isend_data:
-        X.append(it[0])
-        Y.append(it[1])
-
-    lb_isend = exp.lin_reg(X, Y)
-    vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in lb_isend]
-    el = ", ".join(vformat)
-
     if args.ver == "4.1":
         train_data_path = 'data/sonic_long_' + str(args.nump)
     else:
@@ -42,25 +22,21 @@ def selection_experiments(args):
     # converts data to list
     train_data_set = exp.exp_data_list(train_data_path)
 
-    # Hockney model parameters are measured using collective algorithms
-    hockney_model_parameters = []
     coll_algorithms = exp.scatter_algorithms
     if args.ver == "2.1":
         # Open MPI 2.1 does not contain Linear Non Blocking Algorithm
         coll_algorithms.pop()
 
     # Calculate hockney model parameters for each algorithm
+    hockney_model_parameters = []
     for alg in coll_algorithms:
         X = []
         Y = []
         exp.data_processing(train_data_set, 0, 0,
                             X, Y, alg[0])
         hockney_model_parameters.append(exp.lin_reg(X, Y))
-        print("Hockney model params: ")
+        print("Hockney model parameters for" ,alg[1], "algorithm")
         print(hockney_model_parameters[-1])
-        value = hockney_model_parameters[-1]
-        vformat = ['\\num{' + "{:.1e}".format(v) + '}' for v in value]
-        el = ", ".join(vformat)
 
     if args.ver == "4.1":
         unseen_data_path = 'data/sonic_short_' + str(args.nump)
@@ -71,11 +47,12 @@ def selection_experiments(args):
     unseen_data_set = exp.exp_data_list(unseen_data_path)
 
     unseen_data_set = [
-        td for td in unseen_data_set if td[1] in range(65536, 1048576)]
+        td for td in unseen_data_set if td[1] in range(65536, 1048576)] #Data range where rendezvous protocol is used
 
     if not unseen_data_set:
         print('Unseen performance data does not exist!')
         return
+
     print('----------------------------------------------------------------')
     print('Best Perf')
 
@@ -131,7 +108,6 @@ def selection_experiments(args):
         'Open MPI': '--'
     }
 
-    lw = 4
     X = np.array(exp.extract_messages(unseen_data_set))
     Y_exp = np.array(Y_exp)
     Y_model = np.array(Y_model)
@@ -161,14 +137,18 @@ def selection_experiments(args):
     plt.xlabel('Message sizes (Bytes)', fontsize=20)
     plt.ylabel('Time (seconds)', fontsize=20)
     coll_name = 'MPI_Scatter'
-    plt.title(f'{coll_name} P = {args.nump}', fontdict=title_font, fontsize=28)
+    plt.title(f'{coll_name} P = {args.nump}', fontdict=title_font, fontsize=20)
     plt.legend(
         loc='upper left',
         frameon=False,
-        prop=dict(size='18'))
-    plt.tick_params(axis='x', labelsize=18)
-    plt.tick_params(axis='y', labelsize=18)
+        prop=dict(size='20'))
+    plt.tick_params(axis='x', labelsize=20)
+    plt.tick_params(axis='y', labelsize=20)
+    plt.rc('axes', labelsize=20)
+    plt.rc('axes', labelsize=20)
+    plt.savefig('/home/finbar/compsci/fyp/git/final-year-project/images/myfig.png',bbox_inches="tight", pad_inches=0.1, dpi=1000)
     plt.show()
+
 
 
 if __name__ == "__main__":
