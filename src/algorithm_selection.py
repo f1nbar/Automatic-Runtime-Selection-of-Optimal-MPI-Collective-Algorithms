@@ -47,7 +47,7 @@ def selection_experiments(args):
     unseen_data_set = exp.exp_data_list(unseen_data_path)
 
     unseen_data_set = [
-        td for td in unseen_data_set if td[1] in range(65536, 1048576)] #Data range where rendezvous protocol is used
+        td for td in unseen_data_set if td[1] in range(65536, 1048577)] #Data range where rendezvous protocol is used
 
     if not unseen_data_set:
         print('Unseen performance data does not exist!')
