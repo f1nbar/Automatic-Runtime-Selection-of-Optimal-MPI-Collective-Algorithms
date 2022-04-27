@@ -15,6 +15,11 @@ def print_data_row(row):
 
 def selection_experiments(args):
 
+    coll_algorithms = exp.scatter_algorithms
+    if args.ver == "2.1":
+        # Open MPI 2.1 does not contain Linear Non Blocking Algorithm
+        coll_algorithms.pop()
+
     if args.ver == "4.1":
         train_data_path = 'data/sonic_long_' + str(args.nump)
     else:
@@ -22,10 +27,6 @@ def selection_experiments(args):
     # converts data to list
     train_data_set = exp.exp_data_list(train_data_path)
 
-    coll_algorithms = exp.scatter_algorithms
-    if args.ver == "2.1":
-        # Open MPI 2.1 does not contain Linear Non Blocking Algorithm
-        coll_algorithms.pop()
 
     # Calculate hockney model parameters for each algorithm
     hockney_model_parameters = []
@@ -68,7 +69,7 @@ def selection_experiments(args):
 
     for analy_est, best_alg in zip(model_opt_alg, best_perf_alg):
         print(print_data_row(analy_est), ' -- ',
-              '{}%'.format(round(analy_est[3] / best_alg[3] * 100)))
+              '{}%'.format(round(analy_est[3] / best_alg[3] * 100))) #show performance degredation vs best algorithm
 
     print('----------------------------------------------------------------')
     print('OMPI Perf')

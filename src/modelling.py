@@ -50,8 +50,8 @@ def lin_reg(X, Y):
         return -1
     X = np.array(X)
     Y = np.array(Y)
-    huber = HuberRegressor(fit_intercept=True, alpha=10.0,
-                           max_iter=100, epsilon=1.30)
+    huber = HuberRegressor(fit_intercept=True, alpha=40.0,
+                           max_iter=100, epsilon=6.00)
     huber.fit(X[:, np.newaxis], Y)
 
     return huber.intercept_, huber.coef_[0]
@@ -87,7 +87,7 @@ def extract_messages(data_list):
 
 
 def best_performance(data_list, alg_count):
-    # The function returns list of best performance algorithms for  message size
+    # The function returns list of best performance algorithms for  message size, obtained from results
     beg = 0
     best_perf_alg = []
     while beg < len(data_list):
@@ -209,9 +209,9 @@ def ompi_optimal_scatter_alg(data_list):
     for message_size in messages:
 
         if (communicator_size > small_comm_size) and (message_size < small_block_size):
-            opt_scatter_algorithm = 2
+            opt_scatter_algorithm = 1 #Binomial Algorithm
         else:
-            opt_scatter_algorithm = 1
+            opt_scatter_algorithm = 2 #Basic Linear
 
         analy_estimation.append((message_size, opt_scatter_algorithm))
 
