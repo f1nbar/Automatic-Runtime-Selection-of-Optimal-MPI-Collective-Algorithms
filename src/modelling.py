@@ -50,8 +50,8 @@ def lin_reg(X, Y):
         return -1
     X = np.array(X)
     Y = np.array(Y)
-    huber = HuberRegressor(fit_intercept=True, alpha=40.0,
-                           max_iter=100, epsilon=6.00)
+    huber = HuberRegressor(fit_intercept=True, alpha= 0.0,
+                           max_iter=100, epsilon=1.35)
     huber.fit(X[:, np.newaxis], Y)
 
     return huber.intercept_, huber.coef_[0]
@@ -96,9 +96,6 @@ def best_performance(data_list, alg_count):
             best_perf_alg.append(best_alg)
         beg += alg_count
     return best_perf_alg
-
-
-
 
 #In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all procedure.
 def calc_root_overhead(p, a, b):

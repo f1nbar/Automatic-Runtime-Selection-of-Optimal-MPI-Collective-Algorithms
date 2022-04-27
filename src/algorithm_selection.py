@@ -9,9 +9,8 @@ plt.rc('axes', labelsize=18)
 
 def print_data_row(row):
     s = str(row[0]) + ' ' + str(row[1]) + " " + str(row[3]) + " "
-    s += exp.scatter_algorithms[int(row[2] - 2)][1]
+    s += exp.scatter_algorithms[int(row[2] - 1)][1]
     return s.strip()
-
 
 def selection_experiments(args):
 
@@ -26,7 +25,6 @@ def selection_experiments(args):
         train_data_path = 'data/csi_long_' + str(args.nump)
     # converts data to list
     train_data_set = exp.exp_data_list(train_data_path)
-
 
     # Calculate hockney model parameters for each algorithm
     hockney_model_parameters = []
