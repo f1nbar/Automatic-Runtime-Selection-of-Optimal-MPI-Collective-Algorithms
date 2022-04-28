@@ -44,7 +44,7 @@ def lin_reg(X, Y):
     X = np.array(X)
     Y = np.array(Y)
     huber = HuberRegressor(fit_intercept=True, alpha= 0.0,
-                           max_iter=100, epsilon=1.40)
+                           max_iter=100, epsilon=1.35)
     huber.fit(X[:, np.newaxis], Y)
 
     return huber.intercept_, huber.coef_[0]
