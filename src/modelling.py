@@ -10,15 +10,8 @@ scatter_algorithms = [
     # T = (P - 1) * (a + b*m)
     # Linear Non Blocking algorithm added in newer versions of Open MPI
     (3, "LINEAR_NB", "({3} - 1)*({0} + {1}*{2})"),
+
 ]
-
-
-def root_overhead(p, a, b):
-    """root_overhead - is linear regression function betwen numer of processes and isend time.
-    In Open MPI, each parent process in virtual topology sends message to its children using isend with wait_all
-    procedure.
-    """
-    return a + p * b
 
 def data_processing(data, a, b, message_sizes, times, alg_id=0):
     # Processing data for linear regression
@@ -51,7 +44,7 @@ def lin_reg(X, Y):
     X = np.array(X)
     Y = np.array(Y)
     huber = HuberRegressor(fit_intercept=True, alpha= 0.0,
-                           max_iter=100, epsilon=1.35)
+                           max_iter=100, epsilon=1.40)
     huber.fit(X[:, np.newaxis], Y)
 
     return huber.intercept_, huber.coef_[0]
@@ -74,6 +67,7 @@ def exp_data_list(file_path):
     return data
 
 def extract_messages(data_list):
+    #Extracts messages from commiication experiments
     messages = []
     if not data_list:
         return messages
@@ -113,7 +107,7 @@ def scatter_alg_cost(p, a, b, m, alg_id):
 
     return res
 
-
+#Cost of performance models
 def scatter_linear(p, a, b, m):
     coff = (p - 1)
     return coff * (a + m * b), coff
@@ -206,9 +200,9 @@ def ompi_optimal_scatter_alg(data_list):
     for message_size in messages:
 
         if (communicator_size > small_comm_size) and (message_size < small_block_size):
-            opt_scatter_algorithm = 1 #Binomial Algorithm
+            opt_scatter_algorithm = 2 #Binomial Algorithm
         else:
-            opt_scatter_algorithm = 2 #Basic Linear
+            opt_scatter_algorithm = 1 #Basic Linear
 
         analy_estimation.append((message_size, opt_scatter_algorithm))
 
@@ -222,6 +216,7 @@ def ompi_optimal_scatter_alg(data_list):
 
 
 def optimal_scatter_algorithm_by_model(hockney_params, data_list, alg_count):
+    #Predicts the optimal scatter algorithm using the analytical models
     if len(data_list) == 0:
         print("Data list is empty!")
         return -1

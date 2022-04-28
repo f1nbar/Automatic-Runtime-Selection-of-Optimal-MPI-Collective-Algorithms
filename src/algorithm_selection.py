@@ -9,7 +9,7 @@ plt.rc('axes', labelsize=18)
 
 def print_data_row(row):
     s = str(row[0]) + ' ' + str(row[1]) + " " + str(row[3]) + " "
-    s += exp.scatter_algorithms[int(row[2] - 1)][1]
+    s += exp.scatter_algorithms[int(row[2] - 1)][1] #Accounts for algorithm being in list, ie algorithm 1 is at index 0
     return s.strip()
 
 def selection_experiments(args):
@@ -145,9 +145,8 @@ def selection_experiments(args):
     plt.tick_params(axis='y', labelsize=20)
     plt.rc('axes', labelsize=20)
     plt.rc('axes', labelsize=20)
-    plt.savefig('/home/finbar/compsci/fyp/git/final-year-project/images/myfig.png',bbox_inches="tight", pad_inches=0.1, dpi=1000)
-    plt.show()
-
+    #plt.savefig('/home/finbar/compsci/fyp/git/final-year-project/images/myfig.png',bbox_inches="tight", pad_inches=0.1, dpi=1000)
+    #plt.show()
 
 
 if __name__ == "__main__":
