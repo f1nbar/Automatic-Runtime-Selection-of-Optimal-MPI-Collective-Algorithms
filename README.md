@@ -2,7 +2,7 @@
 ## Finbar Ó Deaghaidh - 18410234
 
 This repository contains all programs used for my final year project, described in detail within
-the report. 
+the report. Some programs are based on work by [Emin Nuriyev.](https://csgitlab.ucd.ie/emin.nuri/mpicollmodelling/-/tree/master/)
 
 The `src` directory contains the following programs: 
 
