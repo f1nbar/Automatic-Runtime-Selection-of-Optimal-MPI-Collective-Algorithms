@@ -1,5 +1,5 @@
 # Automatic Runtime Selection of Optimal MPI Collective Algorithms - Final Year Project
-## Finbar Ó Deaghaidh - 18410234
+## Finbar Ó Deaghaidh
 
 This repository contains all programs used for my final year project, described in detail within
 the report. Some programs are based on work by [Emin Nuriyev.](https://csgitlab.ucd.ie/emin.nuri/mpicollmodelling/-/tree/master/)
